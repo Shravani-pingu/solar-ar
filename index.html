@@ -54,11 +54,31 @@
           return response.json();
         })
         .then(data => {
+    
           const panel = document.querySelector("#panel");
+    
           const sun = document.querySelector("#sun"); // Select the new sun entity
+    
           let i = 0;
 
-          function updateTilt() {
+    // ADDED FIX: Ensure Sun is ready and visible before animation starts
+    
+          setTimeout(() => {
+        // Set sun's position once to make sure it's initialized correctly
+        
+            const sun_x_init = (data[0].HR - 13) / 8 * 3;
+        
+            const sun_y_init = data[0].tilt * 4 + 0.5;
+        // Use the final Z position (-2.0)
+        
+            sun.setAttribute('position', `${sun_x_init} ${sun_y_init} -2.0`); 
+        
+            sun.setAttribute('visible', 'true'); // Explicitly force visibility
+    
+          }, 500); // 500ms delay to let the scene fully initialize
+
+    
+          function updateTilt() {            
             if (i >= data.length) i = 0; // Loop the animation
             
             const hour = data[i].HR;
