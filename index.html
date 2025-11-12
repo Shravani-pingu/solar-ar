@@ -30,7 +30,7 @@
             </a-cylinder>
         </a-entity>
 
-        <a-entity id="sun" scale="50 50 50">
+        <a-entity id="sun">
     
           <a-sphere radius="0.5" color="#FFD700" 
         
@@ -75,7 +75,7 @@
             const sun_y_init = data[0].tilt * 4 + 0.5;
         // Use the final Z position (-2.0)
 
-            sun.setAttribute('position', `${sun_x_init / 50} ${sun_y_init / 50} -1000.0`);
+            sun.setAttribute('position', `${sun_x_init} ${sun_y_init} -0.1`);
         
             sun.setAttribute('visible', 'true'); // Explicitly force visibility
     
@@ -105,7 +105,7 @@
             // c) Adjust position to compensate for the scale="50 50 50" on the sun container.
 // We must also place it slightly further back (e.g., -0.04) because of the new size.
 
-            sun.setAttribute('position', `${sun_x / 50} ${sun_y / 50} -1000.0`);
+            sun.setAttribute('position', `${sun_x} ${sun_y} -0.1);
             i++;
             setTimeout(updateTilt, stepDuration);
           }
