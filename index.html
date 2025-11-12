@@ -1,118 +1,96 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
-        <title>Solar Panel AR Animation</title>
-        <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <title>Solar Panel AR Animation</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
   <body style="margin: 0; overflow: hidden;">
-        <a-scene embedded arjs>
-          <!-- Marker -->
-          <a-marker preset="hiro">
-    
-            <a-entity id="panel" position="0 0.5 0" scale="0.4 0.4 0.4">
+    <a-scene embedded arjs>
+      
+      <a-marker preset="hiro">
         
-        
-              <a-box depth="0.05" height="1.0" width="1.6" 
-               
-                color="#002244"
-               
-                position="0 0 0"
-               
-                shader="flat">
-        
-              </a-box>
-        
-        
-              <a-box depth="0.02" height="1.05" width="1.65" 
-               
-                color="#AAAAAA"
-               
-                position="0 0 0">
-        
-              </a-box>
-        
-        
-              <a-cylinder radius="0.05" height="0.5" 
-                    
-                color="#666666" 
-                    
-                position="0 -0.25 0" 
-                    
-                rotation="90 0 0">
-        
-              </a-cylinder>
+        <a-entity id="panel" position="0 0.5 0" scale="0.4 0.4 0.4">
+            
+            <a-box depth="0.05" height="1.0" width="1.6" 
+                   color="#002244"
+                   position="0 0 0"
+                   shader="flat">
+            </a-box>
+            
+            <a-box depth="0.02" height="1.05" width="1.65" 
+                   color="#AAAAAA"
+                   position="0 0 0">
+            </a-box>
+            
+            <a-cylinder radius="0.05" height="0.5" 
+                        color="#666666" 
+                        position="0 -0.25 0" 
+                        rotation="90 0 0">
+            </a-cylinder>
+        </a-entity>
 
-    
-            </a-entity>
-
-          </a-marker>
-          <a-entity camera></a-entity>
+        <a-entity id="sun">
+            <a-sphere radius="0.2" color="#FFD700" 
+                      material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;">
+            </a-sphere>
+        </a-entity>
         
-        </a-scene>
+      </a-marker>
+      
+      <a-entity camera></a-entity>
+    </a-scene>
+    
     <script>
-    // FIX 1: Use the local JSON file ("tilt_predictions.json") to avoid CORS errors
-          const json_url = "tilt_predictions.json";
+      const json_url = "tilt_predictions.json";
+      const stepDuration = 1000; // 1 second per step
+      const PI = Math.PI;
 
-    // Animation speed (1000ms = 1 second per tilt update
-          const stepDuration = 1000;
-          fetch(json_url)
-            .then(response => {
-            // Check for network errors, crucial for local files
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} - Could not find local file.`);
-              }
-            
-              return response.json();
-        
-            })
-        
-            .then(data => {
-            
-              const panel = document.querySelector("#panel");
-            
-              let i = 0;
+      fetch(json_url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const panel = document.querySelector("#panel");
+          const sun = document.querySelector("#sun"); // Select the new sun entity
+          let i = 0;
 
+          function updateTilt() {
+            if (i >= data.length) i = 0; // Loop the animation
             
-              function updateTilt() {
-                
-                if (i >= data.length) i = 0; // Loop the animation
-                
-                // Get the tilt value (in radians)
-                const tilt_radians = data[i].tilt;
-                
-                // FIX 2: Convert radians to degrees (A-Frame uses degrees for rotation
-                const tilt_degrees = tilt_radians * (180 / Math.PI) * 5;
-                
-                // Apply rotation on the X-axis (Pitch). 
-                // Rotation is "X Y Z". We use a negative value for proper visual orientation.
-                
-                panel.setAttribute('rotation', `${-tilt_degrees} 0 0`);
-                
-                
-                i++;
-                
-                setTimeout(updateTilt, stepDuration);
+            const hour = data[i].HR;
+            const tilt_radians = data[i].tilt;
             
-              }
+            // --- 1. PANEL ROTATION (Exaggerated for visibility) ---
+            const panel_tilt_degrees = tilt_radians * (180 / PI) * 5; // Exaggerate by 5x
+            panel.setAttribute('rotation', `${-panel_tilt_degrees} 0 0`);
             
-            // Start the animation loop
+            // --- 2. SUN POSITION (Simulated Arc) ---
             
-              updateTilt();
-        
-            })
-        
-            .catch(error => {
+            // a) Calculate Sun's Horizontal (X) position based on hour (5 to 21 -> -3 to +3 units)
+            // This makes the sun sweep across the marker horizontally
+            const sun_x = (hour - 13) / 8 * 3;
             
-              console.error('Error fetching or processing data:', error);
-            // This alert helps confirm if the file loaded successfully
+            // b) Calculate Sun's Vertical (Y) position based on tilt (to simulate rising/setting)
+            // This relates the panel's angle to the sun's height
+            const sun_y = tilt_radians * 4 + 0.5; // Scale the tilt and add a baseline height
             
-              alert("Error loading animation data. Check your browser console for details."); 
-        
-            });
-
-        </script>
-
-       
+            // c) Position the Sun far away on the Z-axis (e.g., -5 units back)
+            sun.setAttribute('position', `${sun_x} ${sun_y} -5`);
+            
+            i++;
+            setTimeout(updateTilt, stepDuration);
+          }
+          
+          updateTilt();
+        })
+        .catch(error => {
+          console.error('Error fetching or processing data:', error);
+          alert("Error loading animation data. Check your browser console for details.");
+        });
+    </script>
   </body>
 </html>
