@@ -15,37 +15,69 @@
           </a-marker>
           <a-entity camera></a-entity>
         </a-scene>
-
-
         <script>
-          // JSON URL from Google Drive
-          const json_url = "https://drive.google.com/uc?export=download&id=1V5W-CETyFu0NCthx8-trnbGPMxC14Aoc";
+    // FIX 1: Use the local JSON file ("tilt_predictions.json") to avoid CORS errors
+          const json_url = "tilt_predictions.json";
 
-
-          // Animation speed (ms per hour)
-          const stepDuration = 1000;  // 1 second per tilt update
-
-
+    // Animation speed (1000ms = 1 second per tilt update
+          const stepDuration = 1000;
           fetch(json_url)
-            .then(response => response.json())
+            .then(response => {
+            // Check for network errors, crucial for local files
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - Could not find local file.`);
+              }
+            
+              return response.json();
+        
+            })
+        
             .then(data => {
+            
               const panel = document.querySelector("#panel");
+            
               let i = 0;
 
-
+            
               function updateTilt() {
-                if (i >= data.length) i = 0;  // loop over the day
-                const tilt = data[i].tilt;
-                // Rotate around X-axis (tilt * 90 degrees)
-                panel.setAttribute("rotation", tilt * 90 + " 0 0");
+                
+                if (i >= data.length) i = 0; // Loop the animation
+                
+                // Get the tilt value (in radians)
+                const tilt_radians = data[i].tilt;
+                
+                // FIX 2: Convert radians to degrees (A-Frame uses degrees for rotation
+                const tilt_degrees = tilt_radians * (180 / Math.PI);
+                
+                // Apply rotation on the X-axis (Pitch). 
+                // Rotation is "X Y Z". We use a negative value for proper visual orientation.
+                
+                panel.setAttribute('rotation', `${-tilt_degrees} 0 0`);
+                
+                
                 i++;
+                
                 setTimeout(updateTilt, stepDuration);
+            
               }
-
-
-              updateTilt();  // start animation
+            
+            // Start the animation loop
+            
+              updateTilt();
+        
             })
-            .catch(err => console.error(err));
+        
+            .catch(error => {
+            
+              console.error('Error fetching or processing data:', error);
+            // This alert helps confirm if the file loaded successfully
+            
+              alert("Error loading animation data. Check your browser console for details."); 
+        
+            });
+
         </script>
+
+       
   </body>
 </html>
