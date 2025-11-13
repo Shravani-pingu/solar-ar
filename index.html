@@ -71,147 +71,88 @@
       
       <a-entity camera></a-entity>
     </a-scene>
+
     <script>
-    // Show loading initially
-    
+      // Show loading initially
       const loading = document.getElementById('loading');
-    
-    
       const json_url = "tilt_predictions.json"; 
-    
       const stepDuration = 2000;
-    
       const PI = Math.PI;
 
-    // Wait for scene to load first
-    
+      // Wait for scene to load first
       document.querySelector('a-scene').addEventListener('loaded', function() {
-        
         console.log('AR scene loaded, fetching data...');
         
-        
         fetch(json_url)
-            
           .then(response => {
-                
             if (!response.ok) {
-                    
               throw new Error(`HTTP error! status: ${response.status}`);
-                
             }
-                
             return response.json();
-            
           })
-            
           .then(data => {
-                
             console.log('Data loaded successfully:', data);
-                
             loading.style.display = 'none';
-                
-                
+            
             const panel = document.querySelector("#panel");
-                
             const sun = document.querySelector("#sun");
-                
             const hourDisplay = document.getElementById("hour-display");
-                
             const tiltDisplay = document.getElementById("tilt-display");
-                
             let i = 0;
 
-                // --- OPTIMIZED ARC PARAMETERS ---
-                // ARC RADIUS is smaller to keep the sun closer to the panel
-                
-            const arcRadius = 0.5; 
-                // ARC CENTER Y is lower to be above the panel (which is at Y=0.3)
-                
-            const arcCenterY = 0.45; 
-                
-            const arcCenterZ = -0.15; // Set Z back slightly for depth
-                // --------------------------------
+            // --- HIGHER ARC PARAMETERS ---
+            const arcRadius = 0.8; // Larger radius for higher arc
+            const arcCenterY = 0.8; // Higher center point
+            const arcCenterZ = -0.3; // Further back for better depth
+            // --------------------------------
 
-                
             function updateAnimation() {
-                    
               if (i >= data.length) i = 0;
 
-                    
               const hour = data[i].HR;
-                    
               const tilt_radians = data[i].tilt;
 
-                    // Update info panel
-                    
+              // Update info panel
               const panelTiltDegrees = tilt_radians * (180 / PI);
-                    
               hourDisplay.textContent = hour;
-                    
               tiltDisplay.textContent = panelTiltDegrees.toFixed(1);
 
-                    // --- Panel Tilt (FIXED DIRECTION) ---
-                    // Applying negative tilt (around X-axis) to ensure it tilts TOWARDS the sun.
-                    
+              // --- Panel Tilt ---
               panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
 
-                    // --- Sun Position (ARC CALCULATION) ---
-                    // Map hour (e.g., 6 to 18) to 0 to PI radians (180 degree sweep)
-                    
+              // --- Sun Position (HIGHER ARC) ---
+              // Map hour (e.g., 6 to 18) to 0 to PI radians (180 degree sweep)
               const angle = (hour - 6) / 12 * PI; 
-                    
-                    // X position (Side-to-side) - Uses Cosine for horizontal sweep
-                    // Adding 0.5 to center the arc horizontally above the panel
-                    
-              const sunX = arcRadius * Math.cos(angle) + 0; 
-                    
-                    // Y position (Up/Down) - Uses Sine for vertical arc.
-                    
+              
+              // X position - wider horizontal movement
+              const sunX = arcRadius * Math.cos(angle); 
+              
+              // Y position - higher vertical arc (starts and ends higher)
               const sunY = arcCenterY + arcRadius * Math.sin(angle);
-                    
-                    // Z position (Depth/Arc) - Constant Z keeps the arc focused in front/behind the panel.
-                    
+              
+              // Z position - further back
               const sunZ = arcCenterZ; 
-                    
-                    
+              
               sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
-                    
               console.log(`Hour: ${hour}, X: ${sunX.toFixed(2)}, Y: ${sunY.toFixed(2)}, Z: ${sunZ.toFixed(2)}`);
-                    
-                    
+              
               i++;
-                    
               setTimeout(updateAnimation, stepDuration);
-                
             }
 
-                
             updateAnimation();
-            
           })
-            
           .catch(error => {
-                
             console.error('Error:', error);
-                
             loading.innerHTML = `Error loading data: ${error.message}<br>Check console and file path.`;
-            
           });
-    
       });
 
-    // Fallback: hide loading after 10 seconds
-    
+      // Fallback: hide loading after 10 seconds
       setTimeout(() => {
-        
         loading.style.display = 'none';
-    
       }, 10000);
-
-    
     </script>
-
-     
   </body>
 </html>
