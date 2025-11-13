@@ -71,74 +71,146 @@
       
       <a-entity camera></a-entity>
     </a-scene>
-
     <script>
-      // Show loading initially
+    // Show loading initially
+    
       const loading = document.getElementById('loading');
-      
-      // Make sure JSON file path is correct
+    
+    
       const json_url = "tilt_predictions.json"; 
-      const stepDuration = 2000; // Slower for testing
+    
+      const stepDuration = 2000;
+    
       const PI = Math.PI;
 
-      // Wait for scene to load first
+    // Wait for scene to load first
+    
       document.querySelector('a-scene').addEventListener('loaded', function() {
+        
         console.log('AR scene loaded, fetching data...');
         
+        
         fetch(json_url)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Data loaded successfully:', data);
-            loading.style.display = 'none'; // Hide loading
             
+          .then(response => {
+                
+            if (!response.ok) {
+                    
+              throw new Error(`HTTP error! status: ${response.status}`);
+                
+            }
+                
+            return response.json();
+            
+          })
+            
+          .then(data => {
+                
+            console.log('Data loaded successfully:', data);
+                
+            loading.style.display = 'none';
+                
+                
             const panel = document.querySelector("#panel");
+                
             const sun = document.querySelector("#sun");
+                
             const hourDisplay = document.getElementById("hour-display");
+                
             const tiltDisplay = document.getElementById("tilt-display");
+                
             let i = 0;
 
+                // --- OPTIMIZED ARC PARAMETERS ---
+                // ARC RADIUS is smaller to keep the sun closer to the panel
+                
+            const arcRadius = 0.5; 
+                // ARC CENTER Y is lower to be above the panel (which is at Y=0.3)
+                
+            const arcCenterY = 0.45; 
+                
+            const arcCenterZ = -0.15; // Set Z back slightly for depth
+                // --------------------------------
+
+                
             function updateAnimation() {
+                    
               if (i >= data.length) i = 0;
 
+                    
               const hour = data[i].HR;
+                    
               const tilt_radians = data[i].tilt;
 
-              // Update info panel
+                    // Update info panel
+                    
+              const panelTiltDegrees = tilt_radians * (180 / PI);
+                    
               hourDisplay.textContent = hour;
-              tiltDisplay.textContent = (tilt_radians * (180 / PI)).toFixed(1);
+                    
+              tiltDisplay.textContent = panelTiltDegrees.toFixed(1);
 
-              // Panel Tilt - try both positive and negative to see which works
-              const panelTiltDegrees = tilt_radians * (180 / PI); // Try positive first
-              panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
+                    // --- Panel Tilt (FIXED DIRECTION) ---
+                    // Applying negative tilt (around X-axis) to ensure it tilts TOWARDS the sun.
+                    
+              panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
 
-              // Sun Position - simplified for testing
-              const sunX = (hour - 12) / 6; // Simple horizontal movement
-              const sunY = 1.5 + Math.abs(tilt_radians); // Simple vertical movement
-              sun.setAttribute('position', `${sunX} ${sunY} 0`);
+                    // --- Sun Position (ARC CALCULATION) ---
+                    // Map hour (e.g., 6 to 18) to 0 to PI radians (180 degree sweep)
+                    
+              const angle = (hour - 6) / 12 * PI; 
+                    
+                    // X position (Side-to-side) - Uses Cosine for horizontal sweep
+                    // Adding 0.5 to center the arc horizontally above the panel
+                    
+              const sunX = arcRadius * Math.cos(angle) + 0; 
+                    
+                    // Y position (Up/Down) - Uses Sine for vertical arc.
+                    
+              const sunY = arcCenterY + arcRadius * Math.sin(angle);
+                    
+                    // Z position (Depth/Arc) - Constant Z keeps the arc focused in front/behind the panel.
+                    
+              const sunZ = arcCenterZ; 
+                    
+                    
+              sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
-              console.log(`Hour: ${hour}, Tilt: ${panelTiltDegrees}°`);
-              
+                    
+              console.log(`Hour: ${hour}, X: ${sunX.toFixed(2)}, Y: ${sunY.toFixed(2)}, Z: ${sunZ.toFixed(2)}`);
+                    
+                    
               i++;
+                    
               setTimeout(updateAnimation, stepDuration);
+                
             }
 
+                
             updateAnimation();
+            
           })
+            
           .catch(error => {
+                
             console.error('Error:', error);
+                
             loading.innerHTML = `Error loading data: ${error.message}<br>Check console and file path.`;
+            
           });
+    
       });
 
-      // Fallback: hide loading after 10 seconds
+    // Fallback: hide loading after 10 seconds
+    
       setTimeout(() => {
+        
         loading.style.display = 'none';
+    
       }, 10000);
+
+    
     </script>
-  </body>
+
+      </body>
 </html>
