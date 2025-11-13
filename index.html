@@ -1,31 +1,64 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar Panel AR Animation - Optimized for Visibility</title>
+    <title>Solar Panel AR Animation - Fixed Size</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #info-panel {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+        font-size: 14px;
+      }
+    </style>
   </head>
-  <body style="margin: 0; overflow: hidden;">
+  <body>
+    <div id="info-panel">
+      <div>Hour: <span id="hour-display">--</span></div>
+      <div>Tilt: <span id="tilt-display">--</span>°</div>
+    </div>
+    
     <a-scene embedded arjs>
-
       <a-marker preset="hiro">
-
-        <a-entity id="ar-model-group" scale="0.4 0.4 0.4" position="0 0 0">
+        <a-entity id="ar-model-group" scale="0.3 0.3 0.3" position="0 0 0">
           
-          <a-entity id="sun" position="0 0.8 -0.3" scale="0.5 0.5 0.5">
-            <a-sphere radius="0.5" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:2"></a-sphere>
+          <!-- Sun -->
+          <a-entity id="sun" position="0 2 0" scale="0.8 0.8 0.8">
+            <a-sphere radius="0.2" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:1.5"></a-sphere>
           </a-entity>
 
-          <a-entity id="panel" position="0 0 0.025" scale="1 1 1">
-            <a-box depth="0.05" height="0.2" width="0.5" color="#002244" shader="flat" position="0 0.1 0"></a-box>
-            <a-cylinder radius="0.05" height="0.05" color="#666666" position="0 0 0" rotation="0 0 0"></a-cylinder>
+          <!-- Solar Panel -->
+          <a-entity id="panel" position="0 0.3 0" scale="1 1 1">
+            <!-- Main panel -->
+            <a-box depth="0.03" height="0.5" width="0.8" color="#002244" shader="standard" roughness="0.3" metalness="0.2"></a-box>
+            
+            <!-- Panel surface -->
+            <a-box depth="0.015" height="0.45" width="0.75" color="#1a3c6e" position="0 0 0.022" shader="standard" roughness="0.1" metalness="0.7"></a-box>
+            
+            <!-- Support structure -->
+            <a-cylinder radius="0.03" height="0.3" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
+            
+            <!-- Tilt indicator -->
+            <a-cylinder radius="0.008" height="0.5" color="#FF0000" position="0.45 0 0" rotation="0 0 0"></a-cylinder>
           </a-entity>
-
+          
+          <!-- Ground reference -->
+          <a-plane width="1.5" height="1.5" color="#7CFC00" rotation="-90 0 0" position="0 -0.3 0"></a-plane>
+          
         </a-entity>
       </a-marker>
-
       <a-entity camera></a-entity>
-
     </a-scene>
 
     <script>
@@ -41,6 +74,8 @@
         .then(data => {
           const panel = document.querySelector("#panel");
           const sun = document.querySelector("#sun");
+          const hourDisplay = document.getElementById("hour-display");
+          const tiltDisplay = document.getElementById("tilt-display");
           let i = 0;
 
           function updateAnimation() {
@@ -49,20 +84,19 @@
             const hour = data[i].HR;
             const tilt_radians = data[i].tilt;
 
+            // Update info panel
+            hourDisplay.textContent = hour;
+            tiltDisplay.textContent = (tilt_radians * (180 / PI)).toFixed(1);
+
             // --- Panel Tilt ---
-            // Rotation is applied to the panel entity (around X-axis)
-            const panelTiltDegrees = tilt_radians * (180 / PI);
-            // We apply a NEGATIVE tilt here if the data assumes a positive tilt is UP/BACKWARD.
-            // If the model still looks backwards, change this back to positive.
-            panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`); 
+            // Fixed rotation direction
+            const panelTiltDegrees = -tilt_radians * (180 / PI);
+            panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
             // --- Sun Position ---
-            // Scaled the animation values down to match the new 0.4 group scale
-            const sunX = (hour - 13) / 8 * 1.5; // Adjusted sweep (was 2.5)
-            const sunY = 0.8 - tilt_radians * 0.3; // Adjusted Y position (was 1.5 - tilt * 0.5)
-            const sunZ = -0.3; // Adjusted Z position (was -0.5)
-            
-            sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
+            const sunX = Math.sin((hour - 6) / 12 * PI) * 1.0;
+            const sunY = 1.2 + Math.cos((hour - 6) / 12 * PI) * 0.5;
+            sun.setAttribute('position', `${sunX} ${sunY} 0`);
 
             i++;
             setTimeout(updateAnimation, stepDuration);
