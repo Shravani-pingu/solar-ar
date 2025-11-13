@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar Panel AR Animation - Safe Scale</title>
+    <title>Solar Panel AR Animation - Fixed Size</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
@@ -12,14 +12,14 @@
       <a-marker preset="hiro">
 
         <!-- Sun (slightly in front of marker, under panel) -->
-        <a-entity id="sun" position="0 0.3 -0.2" scale="0.1 0.1 0.1">
+        <a-entity id="sun" position="0 0.3 -0.1" scale="0.1 0.1 0.1">
           <a-sphere radius="0.5" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:2"></a-sphere>
         </a-entity>
 
-        <!-- Solar Panel (scaled down, above sun) -->
-        <a-entity id="panel" position="0 0.1 0" scale="0.3 0.3 0.3">
-          <a-box depth="0.05" height="1.0" width="1.6" color="#002244"></a-box>
-          <a-cylinder radius="0.05" height="0.5" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
+        <!-- Solar Panel (small, marker-relative size) -->
+        <a-entity id="panel" position="0 0.15 0" scale="1 1 1">
+          <a-box depth="0.05" height="0.2" width="0.5" color="#002244" shader="flat"></a-box>
+          <a-cylinder radius="0.05" height="0.2" color="#666666" position="0 -0.1 0" rotation="90 0 0"></a-cylinder>
         </a-entity>
 
         <!-- Camera -->
@@ -55,9 +55,9 @@
             panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
             // --- Sun Position (arc under panel) ---
-            const sunX = (hour - 13) / 8 * 1.2;     // Horizontal sweep
-            const sunY = 0.3 - tilt_radians * 0.3;  // Slight vertical arc under panel
-            const sunZ = -0.2;                      // In front of marker
+            const sunX = (hour - 13) / 8 * 0.5;   // smaller horizontal sweep
+            const sunY = 0.3 - tilt_radians * 0.1; // under panel
+            const sunZ = -0.1;                     // in front of marker
             sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
             i++;
