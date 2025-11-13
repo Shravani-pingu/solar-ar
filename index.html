@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar Panel AR Animation - Fixed Size</title>
+    <title>Solar Panel AR Animation</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
@@ -21,6 +21,17 @@
         z-index: 1000;
         font-size: 14px;
       }
+      #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        z-index: 1001;
+      }
     </style>
   </head>
   <body>
@@ -29,8 +40,15 @@
       <div>Tilt: <span id="tilt-display">--</span>°</div>
     </div>
     
-    <a-scene embedded arjs>
-      <a-marker preset="hiro">
+    <div id="loading">Loading AR scene and data...</div>
+    
+    <a-scene 
+      embedded 
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+      vr-mode-ui="enabled: false">
+      
+      <a-marker preset="hiro" id="hiro-marker">
         <a-entity id="ar-model-group" scale="0.3 0.3 0.3" position="0 0 0">
           
           <!-- Sun -->
@@ -40,74 +58,87 @@
 
           <!-- Solar Panel -->
           <a-entity id="panel" position="0 0.3 0" scale="1 1 1">
-            <!-- Main panel -->
-            <a-box depth="0.03" height="0.5" width="0.8" color="#002244" shader="standard" roughness="0.3" metalness="0.2"></a-box>
-            
-            <!-- Panel surface -->
-            <a-box depth="0.015" height="0.45" width="0.75" color="#1a3c6e" position="0 0 0.022" shader="standard" roughness="0.1" metalness="0.7"></a-box>
-            
-            <!-- Support structure -->
+            <a-box depth="0.03" height="0.5" width="0.8" color="#002244"></a-box>
+            <a-box depth="0.015" height="0.45" width="0.75" color="#1a3c6e" position="0 0 0.022"></a-box>
             <a-cylinder radius="0.03" height="0.3" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
-            
-            <!-- Tilt indicator -->
-            <a-cylinder radius="0.008" height="0.5" color="#FF0000" position="0.45 0 0" rotation="0 0 0"></a-cylinder>
+            <a-cylinder radius="0.008" height="0.5" color="#FF0000" position="0.45 0 0"></a-cylinder>
           </a-entity>
           
-          <!-- Ground reference -->
           <a-plane width="1.5" height="1.5" color="#7CFC00" rotation="-90 0 0" position="0 -0.3 0"></a-plane>
           
         </a-entity>
       </a-marker>
+      
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
+      // Show loading initially
+      const loading = document.getElementById('loading');
+      
+      // Make sure JSON file path is correct
       const json_url = "tilt_predictions.json"; 
-      const stepDuration = 1000; 
+      const stepDuration = 2000; // Slower for testing
       const PI = Math.PI;
 
-      fetch(json_url)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          const panel = document.querySelector("#panel");
-          const sun = document.querySelector("#sun");
-          const hourDisplay = document.getElementById("hour-display");
-          const tiltDisplay = document.getElementById("tilt-display");
-          let i = 0;
+      // Wait for scene to load first
+      document.querySelector('a-scene').addEventListener('loaded', function() {
+        console.log('AR scene loaded, fetching data...');
+        
+        fetch(json_url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Data loaded successfully:', data);
+            loading.style.display = 'none'; // Hide loading
+            
+            const panel = document.querySelector("#panel");
+            const sun = document.querySelector("#sun");
+            const hourDisplay = document.getElementById("hour-display");
+            const tiltDisplay = document.getElementById("tilt-display");
+            let i = 0;
 
-          function updateAnimation() {
-            if (i >= data.length) i = 0; // Loop
+            function updateAnimation() {
+              if (i >= data.length) i = 0;
 
-            const hour = data[i].HR;
-            const tilt_radians = data[i].tilt;
+              const hour = data[i].HR;
+              const tilt_radians = data[i].tilt;
 
-            // Update info panel
-            hourDisplay.textContent = hour;
-            tiltDisplay.textContent = (tilt_radians * (180 / PI)).toFixed(1);
+              // Update info panel
+              hourDisplay.textContent = hour;
+              tiltDisplay.textContent = (tilt_radians * (180 / PI)).toFixed(1);
 
-            // --- Panel Tilt ---
-            // Fixed rotation direction
-            const panelTiltDegrees = -tilt_radians * (180 / PI);
-            panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
+              // Panel Tilt - try both positive and negative to see which works
+              const panelTiltDegrees = tilt_radians * (180 / PI); // Try positive first
+              panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
-            // --- Sun Position ---
-            const sunX = Math.sin((hour - 6) / 12 * PI) * 1.0;
-            const sunY = 1.2 + Math.cos((hour - 6) / 12 * PI) * 0.5;
-            sun.setAttribute('position', `${sunX} ${sunY} 0`);
+              // Sun Position - simplified for testing
+              const sunX = (hour - 12) / 6; // Simple horizontal movement
+              const sunY = 1.5 + Math.abs(tilt_radians); // Simple vertical movement
+              sun.setAttribute('position', `${sunX} ${sunY} 0`);
 
-            i++;
-            setTimeout(updateAnimation, stepDuration);
-          }
+              console.log(`Hour: ${hour}, Tilt: ${panelTiltDegrees}°`);
+              
+              i++;
+              setTimeout(updateAnimation, stepDuration);
+            }
 
-          updateAnimation();
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-          alert("Error loading animation data. Check console.");
-        });
+            updateAnimation();
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            loading.innerHTML = `Error loading data: ${error.message}<br>Check console and file path.`;
+          });
+      });
+
+      // Fallback: hide loading after 10 seconds
+      setTimeout(() => {
+        loading.style.display = 'none';
+      }, 10000);
     </script>
   </body>
 </html>
