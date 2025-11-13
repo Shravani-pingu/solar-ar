@@ -51,13 +51,13 @@
 
             // --- Panel Tilt ---
             const panelTiltDegrees = tilt_radians * (180 / PI);
-            panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
+            panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
             // --- Sun Position (Arc over panel) ---
             // Horizontal sweep: hour 5 → -1.5, hour 13 → 0, hour 21 → +1.5
             const sunX = (hour - 13) / 8 * 1.2;
             // Vertical: tilt_radians scaled for visibility
-            const sunY = 1.6 + tilt_radians * 0.5; 
+            const sunY = 1.5 - tilt_radians * 0.5; 
             const sunZ = 1; // Slightly in front of the panel
 
             sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
