@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar Panel AR Animation</title>
+    <title>Solar Panel AR Animation - Swapped</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
@@ -11,16 +11,16 @@
       <!-- Marker -->
       <a-marker preset="hiro">
 
-        <!-- Solar Panel -->
-        <a-entity id="panel" position="0 0.3 0" scale="1 1 1">
+        <!-- Sun (now at panel’s previous position) -->
+        <a-entity id="sun" position="0 0.3 0" scale="0.1 0.1 0.1">
+          <a-sphere radius="0.5" color="#FFD700" material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;"></a-sphere>
+        </a-entity>
+
+        <!-- Solar Panel (now floating above the sun) -->
+        <a-entity id="panel" position="0 1.0 0" scale="1 1 1">
           <a-box depth="0.05" height="1.0" width="1.6" color="#002244" shader="flat"></a-box>
           <a-box depth="0.02" height="1.05" width="1.65" color="#AAAAAA" position="0 0 0"></a-box>
           <a-cylinder radius="0.05" height="0.5" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
-        </a-entity>
-
-        <!-- Sun (sibling, not child of panel) -->
-        <a-entity id="sun" position="0 1.5 0.5" scale="0.1 0.1 0.1">
-          <a-sphere radius="0.5" color="#FFD700" material="emissive:#FFD700; emissiveIntensity: 2; shader: standard;"></a-sphere>
         </a-entity>
 
         <!-- Camera -->
@@ -31,7 +31,7 @@
     </a-scene>
 
     <script>
-      const json_url = "tilt_predictions.json"; // JSON with {HR, tilt} values
+      const json_url = "tilt_predictions.json"; // Your JSON with {HR, tilt} values
       const stepDuration = 1000; // 1 second per step
       const PI = Math.PI;
 
@@ -55,10 +55,10 @@
             const panelTiltDegrees = tilt_radians * (180 / PI);
             panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
-            // --- Sun Position (above panel) ---
-            const sunX = (hour - 13) / 8 * 1.2;      // horizontal sweep
-            const sunY = 1.5 + tilt_radians * 0.5;   // always above panel
-            const sunZ = 0.5;                        // slightly in front
+            // --- Sun Position (arc near marker base) ---
+            const sunX = (hour - 13) / 8 * 1.2;      // Horizontal sweep
+            const sunY = 0.3 - tilt_radians * 0.3;   // Slight vertical arc below panel
+            const sunZ = 1;                          // Slightly in front
             sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
             i++;
