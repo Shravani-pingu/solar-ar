@@ -16,20 +16,20 @@
           <a-box depth="0.05" height="1.0" width="1.6" color="#002244" shader="flat"></a-box>
           <a-box depth="0.02" height="1.05" width="1.65" color="#AAAAAA" position="0 0 0"></a-box>
           <a-cylinder radius="0.05" height="0.5" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
+
+          <!-- Sun as a child of the panel -->
+          <a-entity id="sun" position="0 1.0 0.5" scale="0.1 0.1 0.1">
+            <a-sphere radius="0.5" color="#FFD700" material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;"></a-sphere>
+          </a-entity>
         </a-entity>
 
-        <!-- Sun -->
-        <a-entity id="sun" position="0 1 0" scale="0.1 0.1 0.1">
-          <a-sphere radius="0.5" color="#FFD700" material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;"></a-sphere>
-        </a-entity>
-
+        <a-entity camera></a-entity>
       </a-marker>
 
-      <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      const json_url = "tilt_predictions.json"; // Your JSON with {HR, tilt} values
+      const json_url = "tilt_predictions.json"; // JSON with {HR, tilt} values
       const stepDuration = 1000; // 1 second per step
       const PI = Math.PI;
 
@@ -53,13 +53,10 @@
             const panelTiltDegrees = tilt_radians * (180 / PI);
             panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
-            // --- Sun Position (Arc over panel) ---
-            // Horizontal sweep: hour 5 → -1.5, hour 13 → 0, hour 21 → +1.5
-            const sunX = (hour - 13) / 8 * 1.2;
-            // Vertical: tilt_radians scaled for visibility
-            const sunY = 1.5 - tilt_radians * 0.5; 
-            const sunZ = 1; // Slightly in front of the panel
-
+            // --- Sun Position (relative to panel) ---
+            const sunX = (hour - 13) / 8 * 1.2;      // Horizontal sweep
+            const sunY = 1.0 + tilt_radians * 0.5;   // Always above panel
+            const sunZ = 0.5;                        // Slightly in front
             sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
             i++;
