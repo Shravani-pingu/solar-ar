@@ -1,159 +1,151 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Solar Panel AR Animation</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-      }
-      #info-panel {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        z-index: 1000;
-        font-size: 14px;
-      }
-      #loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 20px;
-        border-radius: 5px;
-        z-index: 1001;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="info-panel">
-      <div>Hour: <span id="hour-display">--</span></div>
-      <div>Tilt: <span id="tilt-display">--</span>°</div>
-    </div>
-    
-    <div id="loading">Loading AR scene and data...</div>
-    
-    <a-scene 
-      embedded 
-      arjs="sourceType: webcam; debugUIEnabled: false;"
-      renderer="logarithmicDepthBuffer: true;"
-      vr-mode-ui="enabled: false">
-      
-      <a-marker type="pattern" url="https://raw.githubusercontent.com/Shravani-pingu/solar-ar/refs/heads/main/pattern-sun-powering-solar-panel-energy-cartoon-illustration-promoting-eco-friendly-future-sun-powering-solar-panel-energy-cartoon-401910021.patt">
+  <head>
+    <title>Solar Panel AR Animation</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #info-panel {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+        font-size: 14px;
+      }
+      #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        z-index: 1001;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info-panel">
+      <div>Hour: <span id="hour-display">--</span></div>
+      <div>Tilt: <span id="tilt-display">--</span>°</div>
+    </div>
+    
+    <div id="loading">Loading AR scene and data...</div>
+    
+    <a-scene 
+      embedded 
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+      vr-mode-ui="enabled: false">
+      
+            <a-marker type="pattern" url="https://raw.githubusercontent.com/Shravani-pingu/solar-ar/main/pattern-sun-powering-solar-panel-energy-cartoon-illustration-promoting-eco-friendly-future-sun-powering-solar-panel-energy-cartoon-401910021.patt">
 
-        <a-entity id="ar-model-group" scale="0.3 0.3 0.3" position="0 0 0">
-          
-          <!-- Sun -->
-          <a-entity id="sun" position="0 2 0" scale="0.8 0.8 0.8">
-            <a-sphere radius="0.2" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:1.5"></a-sphere>
-          </a-entity>
+        <a-entity id="ar-model-group" scale="0.3 0.3 0.3" position="0 0 0">
+          
+                    <a-entity id="sun" position="0 2 0" scale="0.8 0.8 0.8">
+            <a-sphere radius="0.2" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:1.5"></a-sphere>
+          </a-entity>
 
-          <!-- Solar Panel -->
-          <a-entity id="panel" position="0 0.3 0" scale="1 1 1">
-            <a-box depth="0.03" height="0.5" width="0.8" color="#002244"></a-box>
-            <a-box depth="0.015" height="0.45" width="0.75" color="#1a3c6e" position="0 0 0.022"></a-box>
-            <a-cylinder radius="0.03" height="0.3" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
-            <a-cylinder radius="0.008" height="0.5" color="#FF0000" position="0.45 0 0"></a-cylinder>
-          </a-entity>
-          
-          <a-plane width="1.5" height="1.5" color="#7CFC00" rotation="-90 0 0" position="0 -0.3 0"></a-plane>
-          
-        </a-entity>
-      </a-marker>
-      
-      <a-entity camera></a-entity>
-    </a-scene>
+                    <a-entity id="panel" position="0 0.3 0" scale="1 1 1">
+            <a-box depth="0.03" height="0.5" width="0.8" color="#002244"></a-box>
+            <a-box depth="0.015" height="0.45" width="0.75" color="#1a3c6e" position="0 0 0.022"></a-box>
+            <a-cylinder radius="0.03" height="0.3" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
+            <a-cylinder radius="0.008" height="0.5" color="#FF0000" position="0.45 0 0"></a-cylinder>
+          </a-entity>
+          
+          <a-plane width="1.5" height="1.5" color="#7CFC00" rotation="-90 0 0" position="0 -0.3 0"></a-plane>
+          
+        </a-entity>
+      </a-marker>
+      
+      <a-entity camera></a-entity>
+    </a-scene>
 
-    <script>
-      // Show loading initially
-      const loading = document.getElementById('loading');
-      const json_url = "tilt_predictions.json"; 
-      const stepDuration = 2000;
-      const PI = Math.PI;
+    <script>
+      // Show loading initially
+      const loading = document.getElementById('loading');
+      const json_url = "tilt_predictions.json"; 
+      const stepDuration = 2000;
+      const PI = Math.PI;
 
-      // Wait for scene to load first
-      document.querySelector('a-scene').addEventListener('loaded', function() {
-        console.log('AR scene loaded, fetching data...');
-        
-        fetch(json_url)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Data loaded successfully:', data);
-            loading.style.display = 'none';
-            
-            const panel = document.querySelector("#panel");
-            const sun = document.querySelector("#sun");
-            const hourDisplay = document.getElementById("hour-display");
-            const tiltDisplay = document.getElementById("tilt-display");
-            let i = 0;
+      // Wait for scene to load first
+      document.querySelector('a-scene').addEventListener('loaded', function() {
+        console.log('AR scene loaded, fetching data...');
+        
+        fetch(json_url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Data loaded successfully:', data);
+            loading.style.display = 'none';
+            
+            const panel = document.querySelector("#panel");
+            const sun = document.querySelector("#sun");
+            const hourDisplay = document.getElementById("hour-display");
+            const tiltDisplay = document.getElementById("tilt-display");
+            let i = 0;
 
-            // --- HIGHER ARC PARAMETERS ---
-            const arcRadius = 0.8; // Larger radius for higher arc
-            const arcCenterY = 0.8; // Higher center point
-            const arcCenterZ = -0.3; // Further back for better depth
-            // --------------------------------
+            // --- HIGHER ARC PARAMETERS (Keep for better clearance) ---
+            const arcRadius = 0.8; // Larger radius for higher arc
+            const arcCenterY = 0.8; // Higher center point (prevents overlap with panel at Y=0.3)
+            const arcCenterZ = -0.3; // Further back for better depth
+            // --------------------------------
 
-            function updateAnimation() {
-              if (i >= data.length) i = 0;
+            function updateAnimation() {
+              if (i >= data.length) i = 0;
 
-              const hour = data[i].HR;
-              const tilt_radians = data[i].tilt;
+              const hour = data[i].HR;
+              const tilt_radians = data[i].tilt;
 
-              // Update info panel
-              const panelTiltDegrees = tilt_radians * (180 / PI);
-              hourDisplay.textContent = hour;
-              tiltDisplay.textContent = panelTiltDegrees.toFixed(1);
+              // Update info panel
+              const panelTiltDegrees = tilt_radians * (180 / PI);
+              hourDisplay.textContent = hour;
+              tiltDisplay.textContent = panelTiltDegrees.toFixed(1);
 
-              // --- Panel Tilt ---
-              panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
+              // --- Panel Tilt ---
+              panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
 
-              // --- Sun Position (HIGHER ARC) ---
-              // Map hour (e.g., 6 to 18) to 0 to PI radians (180 degree sweep)
-              const angle = (hour - 6) / 12 * PI; 
-              
-              // X position - wider horizontal movement
-              const sunX = arcRadius * Math.cos(angle); 
-              
-              // Y position - higher vertical arc (starts and ends higher)
-              const sunY = arcCenterY + arcRadius * Math.sin(angle);
-              
-              // Z position - further back
-              const sunZ = arcCenterZ; 
-              
-              sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
+              // --- Sun Position (HIGHER ARC) ---
+              const angle = (hour - 6) / 12 * PI; 
+              
+              const sunX = arcRadius * Math.cos(angle); 
+              const sunY = arcCenterY + arcRadius * Math.sin(angle);
+              const sunZ = arcCenterZ; 
+              
+              sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
-              console.log(`Hour: ${hour}, X: ${sunX.toFixed(2)}, Y: ${sunY.toFixed(2)}, Z: ${sunZ.toFixed(2)}`);
-              
-              i++;
-              setTimeout(updateAnimation, stepDuration);
-            }
+              console.log(`Hour: ${hour}, X: ${sunX.toFixed(2)}, Y: ${sunY.toFixed(2)}, Z: ${sunZ.toFixed(2)}`);
+              
+              i++;
+              setTimeout(updateAnimation, stepDuration);
+            }
 
-            updateAnimation();
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            loading.innerHTML = `Error loading data: ${error.message}<br>Check console and file path.`;
-          });
-      });
+            updateAnimation();
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            loading.innerHTML = `Error loading data: ${error.message}<br>Check console and file path.`;
+          });
+      });
 
-      // Fallback: hide loading after 10 seconds
-      setTimeout(() => {
-        loading.style.display = 'none';
-      }, 10000);
-    </script>
-  </body>
+      // Fallback: hide loading after 10 seconds
+      setTimeout(() => {
+        loading.style.display = 'none';
+      }, 10000);
+    </script>
+  </body>
 </html>
