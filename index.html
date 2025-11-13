@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solar Panel AR Animation - Optimized</title>
+    <title>Solar Panel AR Animation - Fixed Size</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
-  <body style="margin:0; overflow:hidden;">
+  <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs>
 
       <a-marker preset="hiro">
 
-        <a-entity id="sun" position="0 0.1 -0.05" scale="0.1 0.1 0.1">
-          <a-sphere radius="0.2" color="#FFD700"
-            material="shader: standard; emissive:#FFD700; emissiveIntensity:2"></a-sphere>
-        </a-entity>
+        <a-entity id="ar-model-group" scale="0.2 0.2 0.2" position="0 0 0">
+          
+          <a-entity id="sun" position="0 1.5 -0.5" scale="0.5 0.5 0.5">
+            <a-sphere radius="0.5" color="#FFD700" material="shader: standard; emissive:#FFD700; emissiveIntensity:2"></a-sphere>
+          </a-entity>
 
-        <a-entity id="panel" position="0 0.05 0" scale="1 1 1">
-          <a-box depth="0.05" height="0.05" width="0.15" color="#002244" shader="flat"></a-box>
-          <a-cylinder radius="0.02" height="0.05" color="#666666" position="0 -0.025 0" rotation="90 0 0"></a-cylinder>
-        </a-entity>
+          <a-entity id="panel" position="0 0 0" scale="1 1 1">
+            <a-box depth="0.05" height="0.2" width="0.5" color="#002244" shader="flat"></a-box>
+            <a-cylinder radius="0.05" height="0.2" color="#666666" position="0 -0.1 0" rotation="90 0 0"></a-cylinder>
+          </a-entity>
 
+        </a-entity>
       </a-marker>
 
       <a-entity camera></a-entity>
@@ -27,8 +29,8 @@
     </a-scene>
 
     <script>
-      const json_url = "tilt_predictions.json"; // JSON {HR, tilt}
-      const stepDuration = 1000; // 1s per step
+      const json_url = "tilt_predictions.json"; 
+      const stepDuration = 1000; 
       const PI = Math.PI;
 
       fetch(json_url)
@@ -41,38 +43,33 @@
           const sun = document.querySelector("#sun");
           let i = 0;
 
-          function animate() {
-            // Loop the data when the end is reached
-            if (i >= data.length) i = 0;
+          function updateAnimation() {
+            if (i >= data.length) i = 0; // Loop
 
             const hour = data[i].HR;
-            const tilt = data[i].tilt; // tilt is expected to be in radians
+            const tilt_radians = data[i].tilt;
 
             // --- Panel Tilt ---
-            const panelTiltDegrees = tilt * (180 / PI);
-            // Apply rotation around the X-axis (pitch)
+            // Rotation is relative to the panel's local axis
+            const panelTiltDegrees = tilt_radians * (180 / PI);
             panel.setAttribute('rotation', `${panelTiltDegrees} 0 0`);
 
-            // --- Sun Movement ---
-            // Horizontal sweep (X) based on hour (e.g., 5 to 21, centered at 13)
-            const sunX = (hour - 13) / 8 * 0.15; 
-            // Vertical position (Y) adjusted for tilt
-            const sunY = 0.1 - tilt * 0.05;
-            // Z position (in front of the panel)
-            const sunZ = -0.05;
-            
+            // --- Sun Position (arc under panel) ---
+            // Adjust position values to make sense for the scaled-down model
+            const sunX = (hour - 13) / 8 * 2.5; // Wider horizontal sweep on the new scale
+            const sunY = 1.5 - tilt_radians * 0.5; // Adjusted Y position
+            const sunZ = -0.5;
             sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
 
             i++;
-            setTimeout(animate, stepDuration);
+            setTimeout(updateAnimation, stepDuration);
           }
 
-          animate();
+          updateAnimation();
         })
         .catch(error => {
           console.error('Error fetching data:', error);
-          // Fallback message if data loading fails
-          alert("Error loading animation data. Check console for details.");
+          alert("Error loading animation data. Check console.");
         });
     </script>
   </body>
