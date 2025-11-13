@@ -7,114 +7,70 @@
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs>
-      
+
+      <!-- Marker -->
       <a-marker preset="hiro">
-        
-        <a-entity id="panel" position="0 0.5 0" scale="0.5 0.5 0.5">
-            
-            <a-box depth="0.05" height="1.0" width="1.6" 
-                   color="#002244"
-                   position="0 0 0"
-                   shader="flat">
-            </a-box>
-            
-            <a-box depth="0.02" height="1.05" width="1.65" 
-                   color="#AAAAAA"
-                   position="0 0 0">
-            </a-box>
-            
-            <a-cylinder radius="0.05" height="0.5" 
-                        color="#666666" 
-                        position="0 -0.25 0" 
-                        rotation="90 0 0">
-            </a-cylinder>
+
+        <!-- Solar Panel -->
+        <a-entity id="panel" position="0 0.5 0" scale="1 1 1">
+          <a-box depth="0.05" height="1.0" width="1.6" color="#002244" shader="flat"></a-box>
+          <a-box depth="0.02" height="1.05" width="1.65" color="#AAAAAA" position="0 0 0"></a-box>
+          <a-cylinder radius="0.05" height="0.5" color="#666666" position="0 -0.25 0" rotation="90 0 0"></a-cylinder>
         </a-entity>
 
-        <a-entity id="sun" scale="50 50 50">
-    
-          <a-sphere radius="0.05" color="#FFD700" 
-        
-            material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;">
-    
-          </a-sphere>
-
+        <!-- Sun -->
+        <a-entity id="sun" position="0 1 0" scale="0.1 0.1 0.1">
+          <a-sphere radius="0.5" color="#FFD700" material="emissive:#FFA500; emissiveIntensity: 2; shader: flat;"></a-sphere>
         </a-entity>
-        
+
       </a-marker>
-      
+
       <a-entity camera></a-entity>
     </a-scene>
-    
+
     <script>
-      const json_url = "tilt_predictions.json";
+      const json_url = "tilt_predictions.json"; // Your JSON with {HR, tilt} values
       const stepDuration = 1000; // 1 second per step
       const PI = Math.PI;
 
       fetch(json_url)
         .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           return response.json();
         })
         .then(data => {
-    
           const panel = document.querySelector("#panel");
-    
-          const sun = document.querySelector("#sun"); // Select the new sun entity
-    
+          const sun = document.querySelector("#sun");
           let i = 0;
 
-    // ADDED FIX: Ensure Sun is ready and visible before animation starts
-    
-          setTimeout(() => {
-        // Set sun's position once to make sure it's initialized correctly
-        
-            const sun_x_init = (data[0].HR - 13) / 8 * 3;
-        
-            const sun_y_init = data[0].tilt * 4 + 0.5;
-        // Use the final Z position (-2.0)
+          function updateAnimation() {
+            if (i >= data.length) i = 0; // Loop
 
-            sun.setAttribute('position', `${sun_x_init/50} ${sun_y_init/50} -100`);
-        
-            sun.setAttribute('visible', 'true'); // Explicitly force visibility
-    
-          }, 500); // 500ms delay to let the scene fully initialize
-
-    
-          function updateTilt() {            
-            if (i >= data.length) i = 0; // Loop the animation
-            
             const hour = data[i].HR;
             const tilt_radians = data[i].tilt;
-            
-            // --- 1. PANEL ROTATION (Exaggerated for visibility) ---
-            const panel_tilt_degrees = tilt_radians * (180 / PI) * 5; // Exaggerate by 5x
-            panel.setAttribute('rotation', `${-panel_tilt_degrees} 0 0`);
-            
-            // --- 2. SUN POSITION (Simulated Arc) ---
-            
-            // a) Calculate Sun's Horizontal (X) position based on hour (5 to 21 -> -3 to +3 units)
-            // This makes the sun sweep across the marker horizontally
-            const sun_x = (hour - 13) / 8 * 3;
-            
-            // b) Calculate Sun's Vertical (Y) position based on tilt (to simulate rising/setting)
-            // This relates the panel's angle to the sun's height
-            const sun_y = tilt_radians * 4 + 0.5; // Scale the tilt and add a baseline height
-            
-            // c) Adjust position to compensate for the scale="50 50 50" on the sun container.
-// We must also place it slightly further back (e.g., -0.04) because of the new size.
 
-            sun.setAttribute('position', `${sun_x/50} ${sun_y/50} -100`);
+            // --- Panel Tilt ---
+            const panelTiltDegrees = tilt_radians * (180 / PI);
+            panel.setAttribute('rotation', `${-panelTiltDegrees} 0 0`);
+
+            // --- Sun Position (Arc over panel) ---
+            // Horizontal sweep: hour 5 → -1.5, hour 13 → 0, hour 21 → +1.5
+            const sunX = (hour - 13) / 8 * 1.5;
+            // Vertical: tilt_radians scaled for visibility
+            const sunY = 1 + tilt_radians * 0.5; 
+            const sunZ = 0.5; // Slightly in front of the panel
+
+            sun.setAttribute('position', `${sunX} ${sunY} ${sunZ}`);
+
             i++;
-            setTimeout(updateTilt, stepDuration);
+            setTimeout(updateAnimation, stepDuration);
           }
-          
-          updateTilt();
+
+          updateAnimation();
         })
         .catch(error => {
-          console.error('Error fetching or processing data:', error);
-          alert("Error loading animation data. Check your browser console for details.");
+          console.error('Error fetching data:', error);
+          alert("Error loading animation data. Check console.");
         });
     </script>
   </body>
